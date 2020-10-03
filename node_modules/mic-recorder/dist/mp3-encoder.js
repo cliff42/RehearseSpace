@@ -1,0 +1,88 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+import { Mp3Encoder } from 'lamejs';
+class Encoder {
+    constructor(config) {
+        this.config = {
+            sampleRate: 44100,
+            bitRate: 128
+        };
+        /**
+         * Audio is processed by frames of 1152 samples per audio channel
+         * http://lame.sourceforge.net/tech-FAQ.txt
+         */
+        this.maxSamples = 1152;
+        this.samplesMono = null;
+        this.dataBuffer = [];
+        if (config) {
+            Object.assign(this.config, config);
+        }
+        this.mp3Encoder = new Mp3Encoder(1, this.config.sampleRate, this.config.bitRate);
+        this.clearBuffer();
+    }
+    /**
+     * Clear active buffer
+     */
+    clearBuffer() {
+        this.dataBuffer = [];
+    }
+    /**
+     * Append new audio buffer to current active buffer
+     * @param {Buffer} buffer
+     */
+    appendToBuffer(buffer) {
+        this.dataBuffer.push(new Int8Array(buffer));
+    }
+    /**
+     * Float current data to 16 bits PCM
+     * @param {Float32Array} input
+     * @param {Int16Array} output
+     */
+    floatTo16BitPCM(input, output) {
+        for (let i = 0; i < input.length; i++) {
+            const s = Math.max(-1, Math.min(1, input[i]));
+            output[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+        }
+    }
+    /**
+     * Convert buffer to proper format
+     * @param {Float32Array} arrayBuffer
+     */
+    convertBuffer(arrayBuffer) {
+        const data = new Float32Array(arrayBuffer);
+        const out = new Int16Array(arrayBuffer.length);
+        this.floatTo16BitPCM(data, out);
+        return out;
+    }
+    /**
+     * Encode and append current buffer to dataBuffer
+     * @param {Float32Array} arrayBuffer
+     */
+    encode(arrayBuffer) {
+        this.samplesMono = this.convertBuffer(arrayBuffer);
+        let remaining = this.samplesMono.length;
+        for (let i = 0; remaining >= 0; i += this.maxSamples) {
+            const left = this.samplesMono.subarray(i, i + this.maxSamples);
+            const mp3buffer = this.mp3Encoder.encodeBuffer(left);
+            this.appendToBuffer(mp3buffer);
+            remaining -= this.maxSamples;
+        }
+    }
+    /**
+     * Return full dataBuffer
+     */
+    finish() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.appendToBuffer(this.mp3Encoder.flush());
+            return this.dataBuffer;
+        });
+    }
+}
+export default Encoder;
+//# sourceMappingURL=mp3-encoder.js.map

@@ -1,0 +1,49 @@
+<div class="container">
+  <div ng-controller="StartCtrl">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>RehearseSpace</h1>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-8">
+          <div class="improve-text float-left">
+            <h5 style="text-align: left;">How to Improve:</h5>
+            <h5 class="notHappy" style="color: lightgreen" ng-show="overallEmotionForImprove !== 'Joy' && overallEmotionForImprove !== 'TOO_MUCH_JOY'">SMILE MORE</h5>
+            <h5 class="tooHappy" style="color: skyblue" ng-show="overallEmotionForImprove === 'TOO_MUCH_JOY'">MAYBE TONE DOWN THE SMILING :)</h5>
+          </div>
+          <div class="btn-group float-right">
+            <button type="button" class="btn btn-outline-secondary" ng-click="stopRecording()" ng-disabled="!recording">STOP</button>
+            <button type="button" class="btn btn-outline-danger" ng-click="startRecording()" ng-disabled="recording">RECORD</button>
+            <!-- <button type="button" class="btn btn-outline-danger" ng-click="startVoiceRecording()" ng-disabled="false">VOICE</button>  TODO: use icons instead -->
+          </div>
+          <video autoplay width="100%"></video>
+          <canvas style="display:none;"></canvas>
+          <div style="margin-top: 1em;">
+            <canvas id="lowerBar" class="chart-horizontal-bar" height="50" chart-data="data" chart-labels="labels" 
+                    chart-options="options" chart-series="series"></canvas>
+          </div>
+      </div>
+      <div class="col-md-4">
+        <div class="jumbotron">
+          <h5 style="text-align: center;">Overall Mood</h5>
+          <p style="text-align: center;">
+            <i class="far fa-meh-blank fa-10x" style="color: lightgreen;" 
+               ng-show="overallEmotion === 'Neutral'"></i>
+            <i class="far fa-surprise fa-10x" style="color: orange;" 
+               ng-show="overallEmotion === 'Surprise'"></i>
+            <i class="far fa-angry fa-10x" style="color: red;" 
+               ng-show="overallEmotion === 'Anger'"></i>
+            <i class="far fa-sad-tear fa-10x" style="color: lightseagreen;" 
+               ng-show="overallEmotion === 'Sorrow'"></i>
+            <i class="far fa-smile fa-10x" style="color: green;" 
+               ng-show="overallEmotion === 'Joy'"></i>
+          </p>
+          <h4 style="text-align: center;">{{overallEmotion}}</h4>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+</div>
